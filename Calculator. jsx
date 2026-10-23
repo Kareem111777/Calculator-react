@@ -1,0 +1,101 @@
+import React, { useState } from 'react'
+
+function Calculator() {
+  const [display, setDisplay] = useState('0')
+  const [prev, setPrev] = useState(null)
+  const [op, setOp] = useState(null)
+  const [fresh, setFresh] = useState(false) // next digit starts a new number
+
+  function inputDigit(d) {
+    if (fresh || display === '0') {
+      setDisplay(d)
+      setFresh(false)
+    } else {
+      setDisplay(display + d)
+    }
+  }
+
+  function inputDot() {
+    if (fresh) {
+      setDisplay('0.')
+      setFresh(false)
+    } else if (!display.includes('.')) {
+      setDisplay(display + '.')
+    }
+  }
+
+  function compute(a, b, operator) {
+    if (operator === '+') return a + b
+    if (operator === '-') return a - b
+    if (operator === '×') return a * b
+    if (operator === '÷') return b === 0 ? 'Error' : a / b
+    return b
+  }
+
+  function chooseOp(nextOp) {
+    const current = parseFloat(display)
+    if (prev !== null && op && !fresh) {
+      const result = compute(prev, current, op)
+      setDisplay(String(result))
+      setPrev(result === 'Error' ? null : result)
+    } else {
+      setPrev(current)
+    }
+    setOp(nextOp)
+    setFresh(true)
+  }
+
+  function equals() {
+    if (prev === null || !op) return
+    const result = compute(prev, parseFloat(display), op)
+    setDisplay(String(result))
+    setPrev(null)
+    setOp(null)
+    setFresh(true)
+  }
+
+  function clear() {
+    setDisplay('0')
+    setPrev(null)
+    setOp(null)
+    setFresh(false)
+  }
+
+  function backspace() {
+    if (fresh) return
+    setDisplay(display.length > 1 ? display.slice(0, -1) : '0')
+  }
+
+  const btn = 'h-14 rounded text-xl font-medium shadow bg-gray-100 hover:bg-gray-200'
+  const opBtn = 'h-14 rounded text-xl font-medium shadow bg-orange-500 text-white hover:bg-orange-600'
+
+  return (
+    <section className="bg-white rounded-md shadow-md p-4 w-72 mx-auto mt-10">
+      <div className="bg-gray-900 text-white text-right text-3xl p-4 rounded mb-4">
+        {display}
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        <button className={btn} onClick={clear}>C</button>
+        <button className={btn} onClick={backspace}>⌫</button>
+        <button className={btn} onClick={() => chooseOp('÷')}>÷</button>
+        <button className={opBtn} onClick={() => chooseOp('×')}>×</button>
+        {['7', '8', '9'].map((n) => (
+          <button key={n} className={btn} onClick={() => inputDigit(n)}>{n}</button>
+        ))}
+        <button className={opBtn} onClick={() => chooseOp('-')}>-</button>
+        {['4', '5', '6'].map((n) => (
+          <button key={n} className={btn} onClick={() => inputDigit(n)}>{n}</button>
+        ))}
+        <button className={opBtn} onClick={() => chooseOp('+')}>+</button>
+        {['1', '2', '3'].map((n) => (
+          <button key={n} className={btn} onClick={() => inputDigit(n)}>{n}</button>
+        ))}
+        <button className={opBtn + ' row-span-2 h-auto'} onClick={equals}>=</button>
+        <button className={btn + ' col-span-2'} onClick={() => inputDigit('0')}>0</button>
+        <button className={btn} onClick={inputDot}>.</button>
+      </div>
+    </section>
+  )
+}
+
+export default Calculator
